@@ -28,6 +28,31 @@
         tools:context="ai.zenlabs.nomewei.MainActivity"
         tools:showIn="@layout/activity_main">
 
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="368dp"
+            android:layout_height="495dp"
+            android:adjustViewBounds="false"
+            android:cropToPadding="false"
+            android:tint="@android:color/darker_gray"
+            app:srcCompat="@drawable/ic_sentiment_satisfied_black_24dp"
+            tools:layout_editor_absoluteX="8dp"
+            tools:layout_editor_absoluteY="8dp" />
+
+        <TextView
+            android:id="@+id/salute"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:text="@string/yaay_nomewei"
+            android:textAlignment="center"
+            android:layout_marginLeft="8dp"
+            app:layout_constraintLeft_toLeftOf="@+id/imageView"
+            android:layout_marginRight="8dp"
+            app:layout_constraintRight_toRightOf="@+id/imageView"
+            app:layout_constraintBottom_toBottomOf="@+id/imageView"
+            android:layout_marginBottom="42dp"
+            app:layout_constraintHorizontal_bias="0.502" />
     </android.support.constraint.ConstraintLayout>
 
     <android.support.design.widget.FloatingActionButton

@@ -1,6 +1,8 @@
 package ai.zenlabs.nomewei;
 
 import android.Manifest;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -21,17 +23,19 @@ import android.view.MenuItem;
 import android.view.View;
 
 import java.util.HashSet;
-import java.util.logging.Handler;
 
 //import android.provider.ContactsContract;
 
-public class MainActivity extends AppCompatActivity implements Loader.OnLoadCanceledListener<Cursor>, Loader.OnLoadCompleteListener<Cursor> {
+public class MainActivity extends AppCompatActivity implements Loader.OnLoadCanceledListener<Cursor>, Loader.OnLoadCompleteListener<Cursor>,MyDialogFragment.NewNumberSource {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int CREATE_CONTACT_REQUEST = 1;
     private static final int CURSOR_LOADER_ID = 2;
-    private static final int REQUEST_READ_CALL_LOG = 3;
+    private static final int COMBINED_PERMISSION_REQUEST = 3;
     private static final String PERMISSION_READ_CALL_LOG = Manifest.permission.READ_CALL_LOG;
+    private static final String PERMISSION_INTERNET = Manifest.permission.INTERNET;
+    private static final String[] permsToRequest = {PERMISSION_READ_CALL_LOG,PERMISSION_INTERNET};
+    private static final String BLACKLIST_URL = ;
     private static HashSet<String> grantedPermissions = new HashSet<>();
 
     @Override
@@ -47,9 +51,16 @@ public class MainActivity extends AppCompatActivity implements Loader.OnLoadCanc
     }
 
     private void handlePermissions() {
-        if (!grantedPermissions.contains(PERMISSION_READ_CALL_LOG)){
-            ActivityCompat.requestPermissions(this, new String[] {PERMISSION_READ_CALL_LOG}, REQUEST_READ_CALL_LOG);
+        String[] required = {};
+
+        for (String permission: permsToRequest) {
+            if (!grantedPermissions.contains(permission)){
+                required[required.length] = permission;
+            }
         }
+
+        ActivityCompat.requestPermissions(this, required, COMBINED_PERMISSION_REQUEST);
+
     }
 
     private void initVariables() {
@@ -62,7 +73,6 @@ public class MainActivity extends AppCompatActivity implements Loader.OnLoadCanc
         initFab();
     }
 
-
     private void initFab() {
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -74,23 +84,33 @@ public class MainActivity extends AppCompatActivity implements Loader.OnLoadCanc
     }
 
     private void handleFabClick() {
-        getRecents();
+        displayDialog();
+        //requestCallLog();
         //createOrUpdateBlackList();
     }
 
-    private void getRecents() {
-        Uri allCalls = Uri.parse("content://call_log/calls");
-        //Cursor c = managedQuery(allCalls, null, null, null, null);
 
+    void displayDialog() {
+
+        // DialogFragment.show() will take care of adding the fragment
+        // in a transaction.  We also want to remove any currently showing
+        // dialog, so make our own transaction and take care of that here.
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        // Create and show the dialog.
+        new MyDialogFragment().setListener(this).show(ft, "dialog");
+    }
+
+    private void requestCallLog() {
+        Uri allCalls = Uri.parse("content://call_log/calls");
         CursorLoader c = new CursorLoader(getApplicationContext(), allCalls, null, null, null, null);
         c.registerListener(CURSOR_LOADER_ID, this);
         c.startLoading();
-//        c.
-//
-//        String num= c.getString(c.getColumnIndex(CallLog.Calls.NUMBER));// for  number
-//        String name= c.getString(c.getColumnIndex(CallLog.Calls.CACHED_NAME));// for name
-//        String duration = c.getString(c.getColumnIndex(CallLog.Calls.DURATION));// for duration
-//        int type = Integer.parseInt(c.getString(c.getColumnIndex(CallLog.Calls.TYPE)));// for call type, Incoming or out going
     }
 
     @Override
@@ -127,7 +147,6 @@ public class MainActivity extends AppCompatActivity implements Loader.OnLoadCanc
         setSupportActionBar(toolbar);
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -154,17 +173,34 @@ public class MainActivity extends AppCompatActivity implements Loader.OnLoadCanc
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode){
-            case REQUEST_READ_CALL_LOG:
-                handleRequestReadCallLog(permissions[0], grantResults[0]);
+            case COMBINED_PERMISSION_REQUEST:
+                handleRequestReadCallLog(permissions, grantResults);
         }
     }
 
-    private void handleRequestReadCallLog(String permission, int grantResult) {
-        if (grantResult==PackageManager.PERMISSION_GRANTED){
-            grantedPermissions.add(permission);
-        }else{
-            Log.w(TAG, "handleRequestReadCallLog: permission denied");
-            handlePermissions();
+    private void handleRequestReadCallLog(String[] permissions, int[] grantResult) {
+        boolean morePermissionsRequired = false;
+        int pos=-1;
+        for(String permission:permissions){
+            pos++;
+            if (grantResult[pos]==PackageManager.PERMISSION_GRANTED){
+                grantedPermissions.add(permission);
+            }else{
+                Log.w(TAG, "handleRequestReadCallLog: permission denied for " + permission);
+            }
         }
+
+        if (morePermissionsRequired) handlePermissions();
     }
+
+    @Override
+    public void onWebSelected() {
+        new WebFetcher(this).execute(BLACKLIST_URL);
+    }
+
+    @Override
+    public void onCallLogSelected() {
+        requestCallLog();
+    }
+
 }
