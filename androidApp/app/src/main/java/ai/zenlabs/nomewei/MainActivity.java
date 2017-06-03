@@ -23,20 +23,28 @@ import android.view.MenuItem;
 import android.view.View;
 
 import java.util.HashSet;
+import java.util.List;
 
 //import android.provider.ContactsContract;
 
-public class MainActivity extends AppCompatActivity implements Loader.OnLoadCanceledListener<Cursor>, Loader.OnLoadCompleteListener<Cursor>,MyDialogFragment.NewNumberSource {
+public class MainActivity extends AppCompatActivity implements Loader.OnLoadCanceledListener<Cursor>, Loader.OnLoadCompleteListener<Cursor>,MyDialogFragment.NewNumberSource, WebFetcher.WebStatusMonitor {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final int CREATE_CONTACT_REQUEST = 1;
-    private static final int CURSOR_LOADER_ID = 2;
-    private static final int COMBINED_PERMISSION_REQUEST = 3;
-    private static final String PERMISSION_READ_CALL_LOG = Manifest.permission.READ_CALL_LOG;
-    private static final String PERMISSION_INTERNET = Manifest.permission.INTERNET;
-    private static final String[] permsToRequest = {PERMISSION_READ_CALL_LOG,PERMISSION_INTERNET};
-    private static final String BLACKLIST_URL = ;
+
+    private static final int    REQUEST_CREATE_CONTACT      = 1;
+    private static final int    REQUEST_CALL_LOG_LAUNCH     = 2;
+    private static final int    REQUEST_COMBINED_PERMISSION = 3;
+    private static final int    REQUEST_PICK_CONTACT        = 4;
+    private static final int    ID_CURSOR_LOADER            = 55;
+
+    private static final String    PERMISSION_READ_CALL_LOG = Manifest.permission.READ_CALL_LOG;
+    private static final String    PERMISSION_INTERNET      = Manifest.permission.INTERNET;
+    private static final String[]  permsToRequest = {PERMISSION_READ_CALL_LOG,PERMISSION_INTERNET};
+
     private static HashSet<String> grantedPermissions = new HashSet<>();
+
+    private static final String BLACKLIST_URL = "https://raw.githubusercontent.com/pwoolvett/nomewei/master/blacklist";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,15 +59,16 @@ public class MainActivity extends AppCompatActivity implements Loader.OnLoadCanc
     }
 
     private void handlePermissions() {
-        String[] required = {};
+        String[] required = {"",""};
 
+        int howManu=-1;
         for (String permission: permsToRequest) {
             if (!grantedPermissions.contains(permission)){
-                required[required.length] = permission;
+                required[++howManu] = permission;
             }
         }
 
-        ActivityCompat.requestPermissions(this, required, COMBINED_PERMISSION_REQUEST);
+        ActivityCompat.requestPermissions(this, required, REQUEST_COMBINED_PERMISSION);
 
     }
 
@@ -84,6 +93,8 @@ public class MainActivity extends AppCompatActivity implements Loader.OnLoadCanc
     }
 
     private void handleFabClick() {
+        //pickContact();
+        //launchCallLog();
         displayDialog();
         //requestCallLog();
         //createOrUpdateBlackList();
@@ -91,10 +102,6 @@ public class MainActivity extends AppCompatActivity implements Loader.OnLoadCanc
 
 
     void displayDialog() {
-
-        // DialogFragment.show() will take care of adding the fragment
-        // in a transaction.  We also want to remove any currently showing
-        // dialog, so make our own transaction and take care of that here.
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         Fragment prev = getFragmentManager().findFragmentByTag("dialog");
         if (prev != null) {
@@ -102,33 +109,7 @@ public class MainActivity extends AppCompatActivity implements Loader.OnLoadCanc
         }
         ft.addToBackStack(null);
 
-        // Create and show the dialog.
         new MyDialogFragment().setListener(this).show(ft, "dialog");
-    }
-
-    private void requestCallLog() {
-        Uri allCalls = Uri.parse("content://call_log/calls");
-        CursorLoader c = new CursorLoader(getApplicationContext(), allCalls, null, null, null, null);
-        c.registerListener(CURSOR_LOADER_ID, this);
-        c.startLoading();
-    }
-
-    @Override
-    public void onLoadCanceled(Loader<Cursor> loader) {}
-
-    @Override
-    public void onLoadComplete(Loader<Cursor> loader, Cursor c) {
-        if (loader.getId()==CURSOR_LOADER_ID){
-            while(c.moveToNext()){
-                String num= c.getString(c.getColumnIndex(CallLog.Calls.NUMBER));// for  number
-                String name= c.getString(c.getColumnIndex(CallLog.Calls.CACHED_NAME));// for name
-                String duration = c.getString(c.getColumnIndex(CallLog.Calls.DURATION));// for duration
-                int type = Integer.parseInt(c.getString(c.getColumnIndex(CallLog.Calls.TYPE)));// for call type, Incoming or out going
-                Log.d(TAG, "onLoadComplete: done");
-            }
-        }else{
-            Log.wtf(TAG, "onLoadComplete: not a registered cursor id");
-        }
     }
 
     private void createOrUpdateBlackList() {
@@ -139,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements Loader.OnLoadCanc
                 .putExtra(ContactsContract.Intents.Insert.NAME, "NO CONTESTAR")
                 .putExtra(ContactsContract.Intents.Insert.PHONE, "+56912345678");
 
-        startActivityForResult(contactIntent, CREATE_CONTACT_REQUEST);
+        startActivityForResult(contactIntent, REQUEST_CREATE_CONTACT);
     }
 
     private void initToolbar() {
@@ -170,10 +151,31 @@ public class MainActivity extends AppCompatActivity implements Loader.OnLoadCanc
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch(requestCode){
+            case REQUEST_CALL_LOG_LAUNCH:
+                handleRequestCallLogLaunch(resultCode, data);
+                break;
+            case REQUEST_PICK_CONTACT:
+                handleRequestPickContact(resultCode,data);
+                break;
+        }
+    }
+
+    private void handleRequestPickContact(int resultCode, Intent data) {
+        Log.d(TAG, "handleRequestPickContact() called with: resultCode = [" + resultCode + "], data = [" + data + "]");
+    }
+
+    private void handleRequestCallLogLaunch(int resultCode, Intent data) {
+        Log.d(TAG, "handleRequestCallLogLaunch() called with: resultCode = [" + resultCode + "], data = [" + data + "]");
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode){
-            case COMBINED_PERMISSION_REQUEST:
+            case REQUEST_COMBINED_PERMISSION:
                 handleRequestReadCallLog(permissions, grantResults);
         }
     }
@@ -187,6 +189,7 @@ public class MainActivity extends AppCompatActivity implements Loader.OnLoadCanc
                 grantedPermissions.add(permission);
             }else{
                 Log.w(TAG, "handleRequestReadCallLog: permission denied for " + permission);
+                morePermissionsRequired = true;
             }
         }
 
@@ -199,8 +202,51 @@ public class MainActivity extends AppCompatActivity implements Loader.OnLoadCanc
     }
 
     @Override
+    public void onStringsReady(List<String> numbers) {
+        Log.d(TAG, "onStringsReady() called with: numbers = [" + numbers + "]");
+    }
+
+    @Override
     public void onCallLogSelected() {
         requestCallLog();
     }
 
+    private void requestCallLog() {
+        Uri allCalls = Uri.parse("content://call_log/calls");
+        CursorLoader c = new CursorLoader(getApplicationContext(), allCalls, null, null, null, null);
+        c.registerListener(ID_CURSOR_LOADER, this);
+        c.startLoading();
+    }
+
+    @Override
+    public void onLoadCanceled(Loader<Cursor> loader) {}
+
+
+    @Override    @SuppressWarnings("unused")
+    public void onLoadComplete(Loader<Cursor> loader, Cursor c) {
+        if (loader.getId()== ID_CURSOR_LOADER){
+            while(c.moveToNext()){
+                String num= c.getString(c.getColumnIndex(CallLog.Calls.NUMBER));// for  number
+                String name= c.getString(c.getColumnIndex(CallLog.Calls.CACHED_NAME));// for name
+                String duration = c.getString(c.getColumnIndex(CallLog.Calls.DURATION));// for duration
+                int type = Integer.parseInt(c.getString(c.getColumnIndex(CallLog.Calls.TYPE)));// for call type, Incoming or out going
+                Log.d(TAG, "onLoadComplete: done");
+            }
+        }else{
+            Log.wtf(TAG, "onLoadComplete: not a registered cursor id");
+        }
+    }
+
+
+    void launchCallLog(){
+        Intent showCallLog = new Intent();
+        showCallLog.setAction(Intent.ACTION_VIEW);
+        showCallLog.setType(CallLog.Calls.CONTENT_TYPE);
+        startActivityForResult(showCallLog, REQUEST_CALL_LOG_LAUNCH);
+    }
+
+    void pickContact(){
+        Intent contactPickerIntent = new Intent(Intent.ACTION_PICK,
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+    }
 }

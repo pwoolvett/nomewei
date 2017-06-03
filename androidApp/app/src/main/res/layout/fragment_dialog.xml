@@ -7,7 +7,10 @@
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="from Where?" />
+        android:background="?attr/colorButtonNormal"
+        android:text="from Where?"
+        android:textAllCaps="false"
+        android:textSize="24sp" />
 
     <Button
         android:id="@+id/callLogBtnId"
@@ -21,9 +24,4 @@
         android:layout_height="wrap_content"
         android:text="Web DB" />
 
-    <TextView
-        android:id="@+id/text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="TextView" />
 </LinearLayout>
