@@ -22,6 +22,7 @@ public class MyDialogFragment extends DialogFragment {
     interface NewNumberSource{
         void onWebSelected();
         void onCallLogSelected();
+        void onContactSelected();
     }
 
     public MyDialogFragment setListener(NewNumberSource listener){
@@ -39,6 +40,15 @@ public class MyDialogFragment extends DialogFragment {
         callLogBtnId.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 listener.onCallLogSelected();
+                dismiss();
+            }
+        });
+
+        Button contactBtnId = (Button)v.findViewById(R.id.contactBtnId);
+        contactBtnId.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                listener.onContactSelected();
+                dismiss();
             }
         });
 
@@ -46,6 +56,7 @@ public class MyDialogFragment extends DialogFragment {
         webBtnId.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 listener.onWebSelected();
+                dismiss();
             }
         });
 

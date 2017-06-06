@@ -1,27 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
-
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorButtonNormal"
-        android:text="from Where?"
-        android:textAllCaps="false"
-        android:textSize="24sp" />
-
-    <Button
-        android:id="@+id/callLogBtnId"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Call Log" />
 
     <Button
         android:id="@+id/webBtnId"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Web DB" />
+        android:text="Web DB"
+        android:layout_below="@+id/callLogBtnId"
+        android:layout_alignParentStart="true" />
 
-</LinearLayout>
+    <Button
+        android:id="@+id/callLogBtnId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Call Log"
+        android:layout_below="@+id/contactBtnId"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:id="@+id/contactBtnId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Contact"
+        android:layout_marginTop="31dp"
+        android:layout_below="@+id/title"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:background="?attr/colorButtonNormal"
+        android:paddingStart="@dimen/fab_margin"
+        android:text="From Where?"
+        android:textAllCaps="false"
+        android:textSize="24sp" />
+
+</RelativeLayout>
