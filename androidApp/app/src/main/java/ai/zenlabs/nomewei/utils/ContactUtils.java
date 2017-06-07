@@ -253,6 +253,7 @@ public class ContactUtils {
         String name;
         String duration;
         String date;
+        String time;
         int type;
 
         @SuppressLint("SimpleDateFormat")
@@ -260,12 +261,34 @@ public class ContactUtils {
             this.num = num;
             this.name = name;
             this.duration = duration;
-            this.date   = new SimpleDateFormat("dd/MM/yyyy").format(new Date(date));
+            Date aDate = new Date(date);
+            this.date   = new SimpleDateFormat("dd/MM/yyyy").format(aDate);
+            this.time =  new SimpleDateFormat("HH:mm").format(aDate);
             this.type = type;
         }
 
         public String toString(){
-            return num+" (" + date + " )";
+//            return num+" (" + date + " )";
+            String res = "";
+            if (  (name!=null) && (!name.equals(""))){
+                res+=name +"\n";
+            }
+
+            if (  (num!=null) && (!num.equals(""))){
+                res+=num+"\n";
+            }
+
+            if (  (date!=null) && (!date.equals(""))){
+                res+=" (" + date +" - ";
+            }
+
+            if (  (time!=null) && (!time.equals(""))){
+                res+=time;
+            }
+            res+=")";
+
+            return res;
+
         }
 
         public String getNumber() {
