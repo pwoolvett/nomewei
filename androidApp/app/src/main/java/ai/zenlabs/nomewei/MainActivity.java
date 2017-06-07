@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity
 
     private static final String CURRENT_CHECKPOINT = "CURRENT_CHECKPOINT";
 
-    private static final String BLACKLIST_URL = "https://raw.githubusercontent.com/pwoolvett/nomewei/master/blacklist";//endregion
+    private static final String BLACKLIST_URL = "https://raw.githubusercontent.com/pwoolvett/nomewei/master/db/blacklist";//endregion
 
 
     //region----------------  Member Variables  ------------------------
@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void recoverVariables() {
-        currentCheckpoint = getPreferences(Context.MODE_PRIVATE).getInt(CURRENT_CHECKPOINT,0);
+        //currentCheckpoint = getPreferences(Context.MODE_PRIVATE).getInt(CURRENT_CHECKPOINT,-1);
     }
 
     private void handlePermissions() {
@@ -425,12 +425,13 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onWebSelected() {
-        new WebFetcher(getApplicationContext(), this, currentCheckpoint).execute(BLACKLIST_URL);
+//        new WebFetcher(getApplicationContext(), this, currentCheckpoint).execute(BLACKLIST_URL);
+        new WebFetcher(getApplicationContext(), this).execute(BLACKLIST_URL);
     }
 
     @Override
-    public void onStringsReady(List<String> newNumbers, int newChechpoint) {
-        updateLastCheckpoint(newChechpoint);
+    public void onStringsReady(List<String> newNumbers){//}, int newChechpoint) {
+        //updateLastCheckpoint(newChechpoint);
         updateBlackListContact(newNumbers);
         Log.d(TAG, "onStringsReady() called with: numbers = [" + newNumbers + "]");
     }
@@ -439,10 +440,10 @@ public class MainActivity extends AppCompatActivity
         (new NumberBlacklister(getApplicationContext(), this, newNumbers)).execute();
     }
 
-    private void updateLastCheckpoint(int newChechpoint) {
-        currentCheckpoint = newChechpoint;
-        // TODO: 6/4/17 also show summary on background
-    }
+//    private void updateLastCheckpoint(int newChechpoint) {
+//        currentCheckpoint = newChechpoint;
+//        // TODO: 6/4/17 also show summary on background
+//    }
 
     @Override
     public void onLineRead(float percentage) {
@@ -472,7 +473,7 @@ public class MainActivity extends AppCompatActivity
 
     private void storeVariables() {
         SharedPreferences.Editor ed = getPreferences(MODE_PRIVATE).edit();
-        ed.putInt(CURRENT_CHECKPOINT, currentCheckpoint);
+        //ed.putInt(CURRENT_CHECKPOINT, currentCheckpoint);
         ed.apply();
     }
 }

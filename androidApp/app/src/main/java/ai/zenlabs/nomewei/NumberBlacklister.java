@@ -67,7 +67,7 @@ class NumberBlacklister extends AsyncTask<Void,Void,Void> {
         List<String> numbers = ContactUtils.getPhoneNumbers(getContext(), BLACKLIST_CONTACT_NAME);
 
         for(String currentNumber:incomingNumbers){
-            if ( !numbers.contains(currentNumber) ){
+            if (  (numbers==null) || ( !numbers.contains(currentNumber) )  ){
                 addNumberToBlackListContact(currentNumber);
             }
         }

@@ -28,22 +28,22 @@ class WebFetcher extends AsyncTask<String,Integer,Void> {
 
     private WebStatusMonitor       listener      = null;
     private List<String>           numberList    = null;
-    private int                    oldCheckpoint = -1;
-    private int                    newCheckpoint = -1;
+    //private int                    oldCheckpoint = -1;
+    //private int                    newCheckpoint = -1;
     private WeakReference<Context> mContext      = null;
 
     private NotificationCompat.Builder mBuilder       = null;
     private NotificationManager        mNotifyManager = null;
 
     interface WebStatusMonitor{
-        void onStringsReady(List<String> numbers, int checkpoint);
+        void onStringsReady(List<String> numbers);//, int checkpoint);
         void onLineRead(float percentage);
     }
 
-    WebFetcher(Context context, WebStatusMonitor listener, int checkpoint){
+    WebFetcher(Context context, WebStatusMonitor listener){//}, int checkpoint){
         mContext = new WeakReference<>(context);
         this.listener = listener;
-        oldCheckpoint = checkpoint;
+        //oldCheckpoint = checkpoint;
     }
 
     @Override
@@ -81,7 +81,7 @@ class WebFetcher extends AsyncTask<String,Integer,Void> {
                 // Removes the progress bar
                 .setProgress(0,0,false);
         mNotifyManager.notify(ID_NOTIFICATION_PROGRESS_UPDATE, mBuilder.build());
-        listener.onStringsReady(numberList, newCheckpoint);
+        listener.onStringsReady(numberList);//, newCheckpoint);
         cleanUp();
     }
 
@@ -111,6 +111,8 @@ class WebFetcher extends AsyncTask<String,Integer,Void> {
             while ((line = reader.readLine()) != null) {// read line by line
                 currentBytes += line.length();
                 if (line.contains("checkpoint")){
+                    // TODO: 6/6/17 impelent checkpoint handling to avoid downloading extra numbers
+                    /*
                     int currentCheckpoint = parseCheckpoint(line);
                     publishProgress((int) (currentBytes*100/sizeInBytes) );
                     if (currentCheckpoint>newCheckpoint){ // update the checkpoint to the new value
@@ -121,8 +123,11 @@ class WebFetcher extends AsyncTask<String,Integer,Void> {
                         is.close();
                         return placeAddress;
                     }
+                    */
+                }else{
+                    placeAddress.add(line); // add line to list
                 }
-                placeAddress.add(line); // add line to list
+
             }
             is.close(); // close input stream
             return placeAddress; // return whatever you need
