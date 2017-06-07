@@ -110,8 +110,20 @@ class NumberBlacklister extends AsyncTask<Void,Void,Void> {
                 .withValue(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
                 .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, BLACKLIST_CONTACT_NAME)
                 .build());
+
+//        ops.add(ContentProviderOperation.newInsert(ContactsContract.PhoneLookup.SEND_TO_VOICEMAIL)
+////                .withValueBackReference(ContactsContract.Contacts.Data.RAW_CONTACT_ID,
+////                        rawContactInsertIndex)
+////                .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+//                .withValue(ContactsContract.PhoneLookup.SEND_TO_VOICEMAIL, 1)
+//                .build());
+
         try {
             res = context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
+            ContentValues values = new ContentValues();
+            values.put(ContactsContract.PhoneLookup.SEND_TO_VOICEMAIL, 1);
+            String[] kk = {BLACKLIST_CONTACT_NAME};
+            context.getContentResolver().update(ContactsContract.Contacts.CONTENT_URI, values, ContactsContract.Contacts.DISPLAY_NAME + "= ?", kk);
         } catch (RemoteException | OperationApplicationException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

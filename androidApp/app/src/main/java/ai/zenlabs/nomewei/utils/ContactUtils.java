@@ -1,22 +1,23 @@
 package ai.zenlabs.nomewei.utils;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.ContentProviderOperation;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.provider.ContactsContract;
+import android.support.annotation.AnimRes;
+import android.support.annotation.BoolRes;
+import android.support.annotation.ColorInt;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.util.Log;
 
-import java.lang.ref.WeakReference;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -56,6 +57,25 @@ public class ContactUtils {
                 .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
                 .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, number)
                 .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_OTHER)
+                .build()
+        );
+
+        // Update
+        try{
+            context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+    public static void updateContactForwardCallsToVoiceMail(Context context, int contactUniqueId, boolean forceVoiceMail) {
+        ArrayList<ContentProviderOperation> ops = new ArrayList<>();
+
+        ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                .withValue(ContactsContract.Data.RAW_CONTACT_ID, contactUniqueId)
+                .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+                .withValue(ContactsContract.PhoneLookup.SEND_TO_VOICEMAIL, forceVoiceMail?1:0)
                 .build()
         );
 
