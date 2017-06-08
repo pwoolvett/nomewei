@@ -29,7 +29,7 @@ import ai.zenlabs.nomewei.utils.ContactUtils;
 class NumberBlacklister extends AsyncTask<Void,Void,Void> {
     private static final String TAG = NumberBlacklister.class.getSimpleName();
 
-    private static final String BLACKLIST_CONTACT_NAME = "NO CONTESTAR";
+    private static final String BLACKLIST_CONTACT_NAME = "NO ME WEI";
     private static final int    REQUEST_CREATE_CONTACT = 1;
     private static final String LABEL_PHONE            = "NOMEWEI";
     private static final int    RAW_CONTACT_ID_DEFAULT = 69;

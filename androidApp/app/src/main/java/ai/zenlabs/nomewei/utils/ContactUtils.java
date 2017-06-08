@@ -201,7 +201,7 @@ public class ContactUtils {
 
     public static void requestCallLog(Context context, Loader.OnLoadCompleteListener<Cursor> listener) {
         Uri allCalls = Uri.parse("content://call_log/calls");
-        CursorLoader c = new CursorLoader(context, allCalls, null, null, null, null);
+        CursorLoader c = new CursorLoader(context, allCalls, null, null, null, "DATE DESC");
         c.registerListener(ID_CURSOR_LOADER_CALL_LOG, listener);
         c.startLoading();
     }
